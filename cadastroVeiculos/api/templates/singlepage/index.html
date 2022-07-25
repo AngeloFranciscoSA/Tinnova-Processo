@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sistema de Veiculos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script>
+        
+
+        function handleModal(id){
+            $("#exampleModal").modal('show');
+            const titulo = document.getElementById("titulo_modal")
+            const corpo = document.getElementById("corpo_modal")
+            const botoes = document.getElementById("botoes_modal")
+
+            const botao_salvar = `<button type="button" class="btn btn-success" id="atualizar" onclick="atualizar_veiculo(${id})">Salvar</button>`
+            const botao_remover = `<button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>`
+
+            titulo.innerHTML = "Atualizando veiculo"
+            botoes.innerHTML = `${botao_salvar} ${botao_remover}`
+            
+
+            fetch(
+                `http://127.0.0.1:8000/api/veiculos/${id}`
+            ).then(
+                (res) => {
+                    if(res.status === 200){
+                        return res.json()
+                    }
+                }
+            ).then( (res) => {
+                const dados = res
+                const checked = dados.vendido === true ? "checked" : ""
+
+                const conteudo_corpo = `
+                    <div class="mb-3">
+                        <label for="veiculo" class="form-label">Veiculo</label>
+                        <input type="text" class="form-control" id="veiculo_atualizar" value="${dados.veiculo}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="marca" class="form-label">Marca</label>
+                        <input type="text" class="form-control" id="marca_atualizar" value="${dados.marca}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="ano" class="form-label">Ano</label>
+                        <input type="text" class="form-control" id="ano_atualizar" value="${dados.ano}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="descricao">Descrição</label>
+                        <textarea class="form-control" placeholder="Deixe uma descrição aqui" id="descricao_atualizar">${dados.descricao}</textarea>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="vendido_atualizar" ${checked}>
+                        <label class="form-check-label" for="exampleCheck1">Vendido?</label>
+                    </div>
+                `
+                corpo.innerHTML = conteudo_corpo;
+            })
+
+        }
+
+        function handleRemover(id){
+            $("#exampleModal").modal('show');
+            const titulo = document.getElementById("titulo_modal")
+            const corpo = document.getElementById("corpo_modal")
+            const botoes = document.getElementById("botoes_modal")
+
+            const botao_salvar = `<button type="button" class="btn btn-danger" id="atualizar" onclick="remover_veiculo(${id})">Remover</button>`
+            const botao_remover = `<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>`
+
+            titulo.innerHTML = "Removendo veiculo"
+            corpo.innerHTML = "Tem certeza que quer remover este veiculo?"
+            botoes.innerHTML = `${botao_salvar} ${botao_remover}`
+        }
+
+        fetch(
+            "http://127.0.0.1:8000/api/veiculos/"
+        ).then(
+            (res) => {
+                if(res.status === 200){
+                    return res.json()
+                }
+            }
+        ).then( (res) => {
+            const dados = res
+            const output = document.getElementById("corpo_tabela")
+
+            var tableContent = "";
+
+            for (index = 0; index < dados.length; index++) {
+
+                const id = (index + 1)
+                const vendido = dados[index]['vendido'] == true ? 'Sim' : 'Não'
+                const botao_atualizar = `<button type="button" class="btn btn-primary" onclick="handleModal(${id})">Atualizar</button>`
+                const botao_remover = `<button type="button" class="btn btn-danger" onclick="handleRemover(${id})">Remover</button>`
+                
+                tableContent += "<tr><td>" + id + "</td>"
+                + "<td>" + dados[index]['marca'] + "</td>"
+                + "<td>" + dados[index]['veiculo'] + "</td>"
+                + "<td>" + dados[index]['ano'] + "</td>"
+                + "<td>" + dados[index]['descricao'] + "</td>"
+                + "<td>" + vendido + "</td>"
+                + "<td>" + botao_atualizar + "</td>"
+                + "<td>" + botao_remover + "</td></tr>"
+                
+
+            }
+            output.innerHTML = tableContent;
+        })
+
+        function remover_veiculo(id){
+            fetch(
+                `http://127.0.0.1:8000/api/veiculos/${id}`,
+                {
+                    method: 'DELETE',
+                }
+            ).then((res)=>{
+                if(res.status === 204){
+                    alert('Removido!')
+                    document.location.reload(true)
+                }else{
+                    alert('Ocorreu um erro no momento de remover o veiculo!')
+                }
+            })
+        }
+
+        function salvar_novo_veiculo(){
+            const veiculo = document.getElementById("veiculo").value
+            const marca = document.getElementById("marca").value
+            const ano = document.getElementById("ano").value
+            const descricao = document.getElementById("descricao").value
+            const vendido = document.getElementById("vendido").checked
+
+            fetch(
+                "http://127.0.0.1:8000/api/veiculos/",
+                {
+                    method: 'POST',
+                    headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        "veiculo": veiculo,
+                        "marca": marca,
+                        "ano": ano,
+                        "descricao": descricao,
+                        "vendido": vendido
+                    })
+                }
+            ).then((res)=>{
+                if(res.status === 201){
+                    alert('Inserido!')
+                    document.location.reload(true)
+                }else{
+                    alert('Ocorreu um erro no momento de inserir o veiculo!')
+                }
+            })
+        }
+
+        function atualizar_veiculo(id){
+            const veiculo = document.getElementById("veiculo_atualizar").value
+            const marca = document.getElementById("marca_atualizar").value
+            const ano = document.getElementById("ano_atualizar").value
+            const descricao = document.getElementById("descricao_atualizar").value
+            const vendido = document.getElementById("vendido_atualizar").checked
+
+            fetch(
+                `http://127.0.0.1:8000/api/veiculos/${id}/`,
+                {
+                    method: 'PUT',
+                    headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        "veiculo": veiculo,
+                        "marca": marca,
+                        "ano": ano,
+                        "descricao": descricao,
+                        "vendido": vendido
+                    })
+                }
+            ).then((res)=>{
+                if(res.status === 200){
+                    alert('Atualizado!')
+                    document.location.reload(true)
+                }else{
+                    alert('Ocorreu um erro no momento de atualizar o veiculo!')
+                }
+            })
+        }
+
+        function criar_modal(){
+            $("#exampleModal").modal('show');
+
+            const titulo = document.getElementById("titulo_modal")
+            const corpo = document.getElementById("corpo_modal")
+            const botoes = document.getElementById("botoes_modal")
+
+            titulo.innerHTML = "Criando novo veiculo"
+
+            const botao_salvar = `<button type="button" class="btn btn-success" id="atualizar" onclick="salvar_novo_veiculo()">Salvar</button>`
+            const botao_remover = `<button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>`
+
+
+            botoes.innerHTML = `${botao_salvar} ${botao_remover}`
+            const conteudo_corpo = `
+                    <div class="mb-3">
+                        <label for="veiculo" class="form-label">Veiculo</label>
+                        <input type="text" class="form-control" id="veiculo">
+                    </div>
+                    <div class="mb-3">
+                        <label for="marca" class="form-label">Marca</label>
+                        <input type="text" class="form-control" id="marca">
+                    </div>
+                    <div class="mb-3">
+                        <label for="ano" class="form-label">Ano</label>
+                        <input type="text" class="form-control" id="ano">
+                    </div>
+                    <div class="mb-3">
+                        <label for="descricao">Descrição</label>
+                        <textarea class="form-control" placeholder="Deixe uma descrição aqui" id="descricao"></textarea>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="vendido">
+                        <label class="form-check-label" for="exampleCheck1">Vendido?</label>
+                    </div>
+                `
+                corpo.innerHTML = conteudo_corpo;
+        }
+    </script>
+
+</head>
+  <body>
+    <div class="container">
+        <!-- Content here -->
+        <h1 style="text-align: center;">Sistema de veiculos</h1>
+
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title" id="titulo_modal"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="corpo_modal">
+                
+                </div>
+                <div class="modal-footer" id="botoes_modal">
+                
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Marca</th>
+                <th scope="col">Veiculo</th>
+                <th scope="col">Ano</th>
+                <th scope="col">Descrição</th>
+                <th scope="col">Vendido</th>
+                <th scope="col">Atualizar</th>
+                <th scope="col">Remover</th>
+              </tr>
+            </thead>
+            <tbody id="corpo_tabela">
+            </tbody>
+        </table>
+        <div style="text-align: center;">
+            <button type="button" class="btn btn-info" onclick="criar_modal()">Adcionar novos Veiculos</button>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+  </body>
+</html>
