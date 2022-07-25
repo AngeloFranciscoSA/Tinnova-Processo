@@ -6,7 +6,7 @@ O Objetivo deste projeto é realizar uma serie da atividades.
 
 # Informações Técnica
 
-O projeto foi realizado em Python 3.6+
+O projeto foi realizado em Python 3.8+
 
 Utiliza algumas biblioteca externas pelo pip:
 
@@ -23,8 +23,3 @@ Utiliza algumas biblioteca externas pelo pip:
 - Atividade 3 = Pasta `Fatorial`
 - Atividade 4 = Pasta `SomaMultiplos3ou5`
 - Atividade 5 = Pasta `cadastroVeiculos`
-
-
-# Documentação do Código
-
-O arquivo `Tinnova-CodigoExplicado.ipynb` explica o codigo no notebook.
